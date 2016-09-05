@@ -22,3 +22,8 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+/web/
+/dev/node_modules
+/dev/typings
+gulp-workflow
