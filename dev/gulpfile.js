@@ -9,8 +9,10 @@ var cleanCSS = require("gulp-clean-css")
 var webpack = require("gulp-webpack")
 var rename = require("gulp-rename")
 var clean = require("gulp-clean")
-var extractor = require("./extractor")
 var Q = require("q")
+var path = require("path")
+var extractor = require("./extractor")
+var ngtemplate = require("./ngtemplate")
 
 var root = "./"
 var dest = "../web/"
@@ -131,22 +133,33 @@ gulp.task("build-module", ["analyze-html"], function () {
             gulp.src(files)
                 .pipe(webpack({
                     resolve: {
+                        root: path.resolve("./"),
                         extensions: ["", ".js", ".ts"]
+                    },
+                    resolveLoader: {
+                        alias: {
+                            "ngtemplate": path.resolve("./ngtemplate")
+                        }
                     },
                     module: {
                         loaders: [
                             {
                                 test: /\.ts$/,
-                                loaders: ["ts-loader"]
+                                loaders: ["awesome-typescript-loader", "ngtemplate"]
+                            },
+                            {
+                                test: /\.(html|css)$/,
+                                loader: 'raw-loader'
                             }
                         ]
                     },
                     externals: {
+                        "@angular/core": "window.ng.core",
                         "@angular/http": "window.ng.http",
                         "rxjs": "window.Rx"
                     }
                 }))
-                .pipe(uglify())
+                //.pipe(uglify())
                 .pipe(rename(fileName))
                 .pipe(gulp.dest(output.module))
                 .on("end", d.resolve)
@@ -171,7 +184,7 @@ gulp.task("md5", ["build-html", "build-css", "build-js", "build-module"], functi
 
 //清理目标文件夹
 gulp.task("clean", function () {
-    return gulp.src(dest + "**")
+    return gulp.src(dest)
         .pipe(clean({
             force: true
         }))
